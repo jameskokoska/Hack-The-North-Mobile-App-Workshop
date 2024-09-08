@@ -21,8 +21,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   updateAnalysis() async {
-    // TODO display the analysis in the UI from Gemini
-    // Finish implementing todoController.analyzeTodoList();
+    setState(() {
+      analysis = null;
+    });
+    String? analysisOutput = await todoController.analyzeTodoList();
+    setState(() {
+      analysis = analysisOutput;
+    });
   }
 
   @override
