@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:implicitly_animated_list/implicitly_animated_list.dart';
-import 'package:template/main.dart';
+import 'package:provider/provider.dart';
+import 'package:template/controllers/todo_controller.dart';
 import 'package:template/widgets/popup_framework.dart';
 import 'package:template/struct/todo.dart';
 
@@ -12,15 +13,6 @@ class TaskPage extends StatefulWidget {
 }
 
 class _TaskPageState extends State<TaskPage> {
-  @override
-  void initState() {
-    //Run this immediately after the UI is built
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      todoController.emitStream();
-    });
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,31 +26,27 @@ class _TaskPageState extends State<TaskPage> {
           ),
         ],
       ),
-      body: StreamBuilder<List<Todo>>(
-        stream: todoController.todosStream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No todos available"));
-          }
-
-          final todos = snapshot.data!;
-
-          return ImplicitlyAnimatedList(
-            itemData: todos,
-            itemBuilder: (context, todo) {
-              // TODO: Implement the task component
-              return const SizedBox.shrink();
-            },
-          );
-        },
-      ),
+      body: Builder(builder: (context) {
+        TodoController todoController = Provider.of<TodoController>(context);
+        return todoController.todos.isEmpty
+            ? const Center(child: Text("No todos available"))
+            : ImplicitlyAnimatedList(
+                itemData: todoController.todos,
+                itemBuilder: (context, todo) {
+                  // TODO: Implement the task component
+                  return const SizedBox.shrink();
+                },
+              );
+      }),
     );
   }
 
   addTodo(String todoName) {
     final taskName = todoName.trim();
     if (taskName.isNotEmpty) {
-      todoController.addTodo(taskName);
+      TodoController todoControllerInstance =
+          Provider.of<TodoController>(context, listen: false);
+      todoControllerInstance.addTodo(taskName);
     }
   }
 
@@ -100,7 +88,10 @@ class _TaskPageState extends State<TaskPage> {
             onSubmitted: (value) {
               final taskName = taskController.text.trim();
               if (taskName.isNotEmpty) {
-                todoController.updateTodo(todo.copyWith(taskName: taskName));
+                TodoController todoControllerInstance =
+                    Provider.of<TodoController>(context, listen: false);
+                todoControllerInstance
+                    .updateTodo(todo.copyWith(taskName: taskName));
                 Navigator.pop(context);
               }
             },

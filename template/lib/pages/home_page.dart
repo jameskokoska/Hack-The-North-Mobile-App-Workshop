@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:template/framework/route_framework.dart';
-import 'package:template/main.dart';
 import 'package:template/widgets/tappable.dart';
 
 class HomePage extends StatefulWidget {

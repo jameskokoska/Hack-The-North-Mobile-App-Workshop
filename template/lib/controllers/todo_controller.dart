@@ -3,28 +3,20 @@ import 'dart:async';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:template/main.dart';
 import 'package:template/struct/todo.dart';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class TodoController {
+class TodoController with ChangeNotifier {
   static const _todoKey = 'todo_list';
-
-  final StreamController<List<Todo>> _todoStreamController =
-      StreamController<List<Todo>>.broadcast();
   List<Todo> _todos = [];
 
   TodoController() {
     _loadTodos();
   }
 
-  void emitStream() {
-    _todoStreamController.add(_todos);
-  }
+  List<Todo> get todos => _todos;
 
-  Stream<List<Todo>> get todosStream {
-    _todoStreamController.add(_todos);
-    return _todoStreamController.stream;
-  }
-
-  void _loadTodos() {
+  void _loadTodos() async {
     final todoListString = prefs.getString(_todoKey) ?? '[]';
     final List<dynamic> todoListJson = json.decode(todoListString);
 
@@ -37,7 +29,7 @@ class TodoController {
             ))
         .toList();
 
-    _todoStreamController.add(_todos);
+    notifyListeners();
   }
 
   Future<void> _saveTodos() async {
@@ -59,7 +51,7 @@ class TodoController {
       isCompleted: false,
     );
     _todos.insert(0, newTodo);
-    _sortTodosAndPublish(shouldPublishChanges: true);
+    _sortTodosAndPublish();
   }
 
   void deleteTodo(String id) {
@@ -67,7 +59,7 @@ class TodoController {
 
     if (index >= 0 && index < _todos.length) {
       _todos.removeAt(index);
-      _sortTodosAndPublish(shouldPublishChanges: true);
+      _sortTodosAndPublish();
     }
   }
 
@@ -76,22 +68,22 @@ class TodoController {
 
     if (index != -1) {
       _todos[index] = updatedTodo;
-      _sortTodosAndPublish(shouldPublishChanges: true);
+      _sortTodosAndPublish();
     }
   }
 
-  Future<void> _sortTodosAndPublish({required shouldPublishChanges}) async {
+  Future<void> _sortTodosAndPublish() async {
     _todos.sort((a, b) {
       if (a.isCompleted && !b.isCompleted) return 1;
       if (!a.isCompleted && b.isCompleted) return -1;
       return b.dateCreated.compareTo(a.dateCreated);
     });
-    if (shouldPublishChanges) _publishChanges();
+    _publishChanges();
   }
 
   void _publishChanges() {
     _saveTodos();
-    _todoStreamController.add(_todos);
+    notifyListeners();
   }
 
   Future<String?> analyzeTodoList() async {
