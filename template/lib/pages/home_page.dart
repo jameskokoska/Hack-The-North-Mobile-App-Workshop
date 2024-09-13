@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:template/controllers/todo_controller.dart';
 import 'package:template/framework/route_framework.dart';
 import 'package:template/widgets/tappable.dart';
 
@@ -24,7 +26,9 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       analysis = null;
     });
-    String? analysisOutput = await todoController.analyzeTodoList();
+    TodoController todoControllerInstance =
+        Provider.of<TodoController>(context, listen: false);
+    String? analysisOutput = await todoControllerInstance.analyzeTodoList();
     setState(() {
       analysis = analysisOutput;
     });

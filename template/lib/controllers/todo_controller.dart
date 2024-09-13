@@ -87,10 +87,13 @@ class TodoController with ChangeNotifier {
   }
 
   Future<String?> analyzeTodoList() async {
-    final gemini = Gemini.instance;
-
-    return (await gemini.text(
-            "The output you send back should not be more than 2 sentences. Give me a nice summary of my todo list. Make a joke about certain tasks and be funny. Here is the list: $_todos"))
-        ?.output;
+    try {
+      final gemini = Gemini.instance;
+      String prompt =
+          "The output you send back should not be more than 2 sentences. Give me a nice summary of my todo list. Make a joke about certain tasks and be funny. Here is the list: $_todos";
+      return (await gemini.text(prompt))?.output;
+    } catch (e) {
+      return e.toString();
+    }
   }
 }

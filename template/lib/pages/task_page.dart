@@ -33,8 +33,27 @@ class _TaskPageState extends State<TaskPage> {
             : ImplicitlyAnimatedList(
                 itemData: todoController.todos,
                 itemBuilder: (context, todo) {
-                  // TODO: Implement the task component
-                  return const SizedBox.shrink();
+                  return ListTile(
+                    key: ValueKey(todo.id),
+                    subtitle: Text(todo.id),
+                    title: Text(
+                      todo.taskName,
+                      style: TextStyle(
+                        decoration: todo.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
+                      ),
+                    ),
+                    onTap: () => _showEditTodoBottomSheet(context, todo),
+                    onLongPress: () => todoController.deleteTodo(todo.id),
+                    trailing: Checkbox(
+                      value: todo.isCompleted,
+                      onChanged: (value) {
+                        todoController.updateTodo(
+                            todo.copyWith(isCompleted: value ?? false));
+                      },
+                    ),
+                  );
                 },
               );
       }),
